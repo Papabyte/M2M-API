@@ -1,6 +1,8 @@
 # Example M2M API
 This repository contains code for an API server and client that demonstrates [Obyte payment channels](https://github.com/Papabyte/aa-channels-lib) for a  machine-to-machine payment application.
-Obyte messenger is used as communication medium, no additional setup required.
+
+Obyte messenger is used as communication medium so no additional setup is required.
+
 The client requests data while sending an instant payment through channel, if payment matches price server sends requested data, otherwise it refunds client.
 
 A command prompt interface is provided client side to play with channel.
