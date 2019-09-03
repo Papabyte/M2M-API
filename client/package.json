@@ -1,0 +1,11 @@
+{
+	"name": "API-client",
+	"version": "1.0.0",
+	"description": "Example of M2M-API client",
+	"main": "client.js",
+	"license": "MIT",
+	"dependencies": {
+		"aa-channels-lib": "git+https://github.com/Papabyte/aa-channels-lib.git",
+		"prompts": "^2.2.1"
+	}
+}
