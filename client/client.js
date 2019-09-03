@@ -15,7 +15,7 @@ eventBus.on("headless_wallet_ready", function() {
 			});
 
 			console.error("pairing_code " + pairing_code.value);
-			channels.getChannelsForPeer(pairing_code.value, null, function(error, aa_addresses) {
+			channels.getChannelsForPeer(pairing_code.value, null, async function(error, aa_addresses) {
 
 				if (error) {
 					console.error(error);
