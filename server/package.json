@@ -1,0 +1,10 @@
+{
+	"name": "API-server",
+	"version": "1.0.0",
+	"description": "Example of M2M-API server",
+	"main": "server.js",
+	"license": "MIT",
+	"dependencies": {
+		"aa-channels-lib": "git+https://github.com/Papabyte/aa-channels-lib.git",
+	}
+}
