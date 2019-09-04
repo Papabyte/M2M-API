@@ -19,6 +19,7 @@ A command prompt interface is provided client side to play with channel.
 * `cd server`
 * `npm install`
 * `node server.js` to start server
+* Enter a passphrase (you can let it empty on testnet)
 * Send testnet bytes to the address that appears at `====== my single address:`
 * Note the indicated pairing code, it will be asked by client
 
@@ -27,5 +28,8 @@ A command prompt interface is provided client side to play with channel.
 * `cd server`
 * `npm install`
 * `node client.js` to start client
+* Enter a passphrase (you can let it empty on testnet)
 * Send testnet bytes to the address that appears at `====== my single address:`
 * Follow instructions
+
+

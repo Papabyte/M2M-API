@@ -9,21 +9,23 @@ eventBus.on("headless_wallet_ready", function() {
 	setTimeout(
 		async function() {
 
-			if (fs.existsSync('last_peer.txt'))
+			if (fs.existsSync('last_peer.txt')) // we read this file to know what last pairing code was used, so we can suggest it as input
 				var last_peer = fs.readFileSync('last_peer.txt', 'utf8');
 
-			const pairing_code = await prompts({
+			const pairing_code = await prompts({ // we ask pairing code of API server
 				type: 'text',
 				name: 'value',
 				message: 'Enter pairing code of your peer',
 				initial: last_peer,
 				validate: value => value.match(/^([\w\/+]+)@([\w.:\/-]+)#([\w\/+-]+)$/) ? true : `Pairing code is invalid`
 			});
-			fs.writeFile("last_peer.txt", pairing_code.value, (err) => {
-				console.log("error when writing last peer");
+			fs.writeFile("last_peer.txt", pairing_code.value, (err) => { // we save pairing code in a file
+				console.log("error when writing last peer: " + err);
 			})
-			channels.getChannelsForPeer(pairing_code.value, null, async function(error, aa_addresses) {
 
+			//this function returns all channels created with this peer, if found we pick the first one assuming we didn't create multiple channels
+			// if not found we create one
+			channels.getChannelsForPeer(pairing_code.value, null, async function(error, aa_addresses) {
 				if (error) {
 					console.error(error);
 					console.error("no channel found for this peer, I'll create one");
@@ -40,20 +42,19 @@ eventBus.on("headless_wallet_ready", function() {
 					}, function(error, aa_address) {
 						if (error)
 							return console.error(error);
-						transactWithPeer(aa_address);
+						operateOnChannel(aa_address);
 					})
 				} else {
-					transactWithPeer(aa_addresses[0])
+					operateOnChannel(aa_addresses[0])
 				}
 			});
-		}, 2000)
+		}, 2000) // we have to wait a bit before displaying the prompt to be sure logs output were cleared from console
 });
 
-function transactWithPeer(aa_address) {
-
+// this is the main prompt that is recursively called after each operation
+function operateOnChannel(aa_address) {
 
 	channels.getBalancesAndStatus(aa_address, async function (error, objBalancesAndStatus){
-
 		if (error)
 			throw Error(error)
 		console.error("\x1b[36m","\n\nChannel "+ aa_address +" info:");
@@ -73,7 +74,7 @@ function transactWithPeer(aa_address) {
 
 		if (index.value == 4) {
 			await deposit(aa_address);
-			return transactWithPeer(aa_address);
+			return operateOnChannel(aa_address);
 		}
 
 		if (index.value == 5) {
@@ -82,12 +83,12 @@ function transactWithPeer(aa_address) {
 					console.error(error)
 				else
 					console.error("closing unit sent");
-				return transactWithPeer(aa_address);
+				return operateOnChannel(aa_address);
 			});
 		}
 
 		if (index.value == 6)
-			return transactWithPeer(aa_address);
+			return operateOnChannel(aa_address);
 
 		if (index.value == 7)
 			return process.exit();
@@ -95,7 +96,7 @@ function transactWithPeer(aa_address) {
 		const latitude = await prompts({
 			type: 'number',
 			name: 'value',
-			message: 'latitude? (-90 to 90)',
+			message: 'latitude? (-90 to 90)', // we don't check range, it will be done by API server and is an example of returned error
 		});
 
 		const longitude = await prompts({
@@ -120,13 +121,14 @@ function transactWithPeer(aa_address) {
 			case 3:
 				endPoint = 'wind'
 		}
+		
 		channels.sendMessageAndPay(aa_address, [endPoint, latitude.value, longitude.value], amount.value, function(error, response) {
 			if (error)
 				console.error("error when sending payment: " + error);
 			else
 				console.error(response);
 			setTimeout(function() {
-				transactWithPeer(aa_address);
+				operateOnChannel(aa_address);
 			}, 100);
 		});
 	})

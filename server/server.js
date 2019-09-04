@@ -1,6 +1,7 @@
 "use strict";
 const channels = require("aa-channels-lib");
 
+// this object configures API endpoints, their associated result callbacks and price for the request
 const endPoints = {
 	temperature: {
 		result: (lat, long, handle) => {
@@ -8,7 +9,7 @@ const endPoints = {
 				return handle("wrong latitude");
 			if (long < -180 || long > 180)
 				return handle("wrong longitude");
-			return handle(null, "20°C");
+			return handle(null, "20°C"); // result is send in second parameters, first parameter has to be null when no error
 		},
 		price: 1000
 	},
@@ -33,6 +34,10 @@ const endPoints = {
 		price: 20000
 	}
 }
+
+// we provide to the library the function that treats every payment received
+// arrReceivedFromPeer is an array provided by peer containing the endpoint as first entry then optional parameters that will be passed to result callbacks on same order
+// amount paid and endpoint's price are compared, if too low we refund full amount, if too high we refund overpaid amount
 
 channels.setCallBackForPaymentReceived(function(amount, asset, arrReceivedFromPeer, aa_address, handle) {
 	const endPoint = arrReceivedFromPeer[0];
@@ -62,6 +67,7 @@ channels.setCallBackForPaymentReceived(function(amount, asset, arrReceivedFromPe
 		return handle("payment expected for this endpoint " + price + " bytes");
 	}
 
+	// paid amount and price matches, we execute result callback and send data to peer
 	endPoints[endPoint].result(...arrAguments, function(error, result) {
 		if (error) {
 			refundPeer(aa_address, amount, "refund for API error");
