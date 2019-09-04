@@ -34,50 +34,38 @@ const endPoints = {
 	}
 }
 
-channels.setCallBackForPaymentReceived(function(amount, asset, arrOrder, aa_address, handle) {
-	const endPoint = arrOrder[0];
-	const arrAguments = arrOrder.slice(1);
+channels.setCallBackForPaymentReceived(function(amount, asset, arrReceivedFromPeer, aa_address, handle) {
+	const endPoint = arrReceivedFromPeer[0];
+	const arrAguments = arrReceivedFromPeer.slice(1);
 
 	if (asset != "base"){
 		refundPeer(aa_address, amount, "refund for incorrect request");
-		return handle({
-			error: "incorrect asset for payment"
-		});
+		return handle("incorrect asset for payment");
 	}
 
 	if (!endPoints[endPoint]){
 		refundPeer(aa_address, amount, "refund for incorrect request");
-		return handle({
-			error: "unknown endpoint"
-		});
+		return handle("unknown endpoint");
 	}
 
 	if (arrAguments.length !== (endPoints[endPoint].result.length - 1))
-		return handle({
-			error: "wrong parameters number, expected : " + (endPoints[endPoint].result.length - 1) + ", received " + arrAguments.length
-		});
+		return handle("wrong parameters number, expected : " + (endPoints[endPoint].result.length - 1) + ", received " + arrAguments.length);
 
 	var price = endPoints[endPoint].price;
 	if (price > amount) {
 		refundPeer(aa_address, amount, "refund for incorrect payment");
-		return handle({
-			error: "payment expected for this endpoint " + price + " bytes"
-		});
+		return handle("payment expected for this endpoint " + price + " bytes");
 	}
 
 	if (price < amount) {
 		refundPeer(aa_address, amount - price, "refund for over payment");
-		return handle({
-			error: "payment expected for this endpoint " + price + " bytes"
-		});
+		return handle("payment expected for this endpoint " + price + " bytes");
 	}
 
 	endPoints[endPoint].result(...arrAguments, function(error, result) {
 		if (error) {
 			refundPeer(aa_address, amount, "refund for API error");
-			return handle({
-				error: error
-			});
+			return handle(error);
 		} else
 			return handle(null, result);
 	})

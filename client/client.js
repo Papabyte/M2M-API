@@ -43,70 +43,86 @@ eventBus.on("headless_wallet_ready", function() {
 		}, 2000)
 })
 
-async function transactWithPeer(aa_address) {
-	console.error("\nNew operation on channel: " + aa_address);
-	const index = await prompts({
-		type: 'number',
-		name: 'value',
-		message: 'type:\n 1 to request humidity \n 2 to request temperature \n 3 to request wind \n 4 to deposit on channel \n 5 to close channel \n 6 to quit',
-		validate: value => value > 6 || value < 0 ? `Invalid entry` : true
-	});
+function transactWithPeer(aa_address) {
 
-	if (index.value == 4) {
-		await deposit(aa_address);
-		return transactWithPeer(aa_address);
-	}
 
-	if (index.value == 5) {
-		return channels.close(aa_address, function(error) {
-			if (error)
-				console.error(error)
-			else
-				console.error("closing unit sent");
-			return transactWithPeer(aa_address);
-		});
-	}
+	channels.getBalancesAndStatus(aa_address, async function (error, objBalancesAndStatus){
 
-	if (index.value == 6)
-		return process.exit();
-
-	const latitude = await prompts({
-		type: 'number',
-		name: 'value',
-		message: 'latitude? (-90 to 90)',
-	});
-
-	const longitude = await prompts({
-		type: 'number',
-		name: 'value',
-		message: 'longitude? (-180 to 180)',
-	});
-
-	const amount = await prompts({
-		type: 'number',
-		name: 'value',
-		message: 'payment amount?',
-	});
-
-	var endPoint;
-	switch (index.value) {
-		case 1:
-			endPoint = 'temperature'
-			break;
-		case 2:
-			endPoint = 'humidity'
-		case 3:
-			endPoint = 'wind'
-	}
-	channels.sendMessageAndPay(aa_address, [endPoint, latitude.value, longitude.value], amount.value, function(error, response) {
 		if (error)
-			console.error("error when sending payment: " + error);
-		else
-			console.error(response);
-		setTimeout(function() {
-			transactWithPeer(aa_address);
-		}, 100);
-	});
+			throw Error(error)
+		console.error("\x1b[36m","\n\nChannel "+ aa_address +" info:");
+		console.error("\x1b[36m","Status: "+ objBalancesAndStatus.status);
+		console.error("\x1b[36m","Amount deposited by me and confirmed: "+ objBalancesAndStatus.amount_deposited_by_me);
+		console.error("\x1b[36m","Amount spent by me: "+ objBalancesAndStatus.amount_spent_by_me);
+		console.error("\x1b[36m","Confirmed amount available for spending: "+ objBalancesAndStatus.free_amount);
+		console.error("\x1b[36m","My deposits not confirmed yet: "+ objBalancesAndStatus.my_deposits);
+	
+		const index = await prompts({
+			type: 'number',
+			name: 'value',
+			message: '\nChoose an operation for this channel, type:\n 1 to request humidity \n 2 to request temperature \n 3 to request wind \n 4 to deposit on channel \n 5 to close channel \n 6 to refresh status \n 7 to quit',
+			validate: value => value > 7 || value < 0 ? `Invalid entry` : true
+		});
+
+		if (index.value == 4) {
+			await deposit(aa_address);
+			return transactWithPeer(aa_address);
+		}
+
+		if (index.value == 5) {
+			return channels.close(aa_address, function(error) {
+				if (error)
+					console.error(error)
+				else
+					console.error("closing unit sent");
+				return transactWithPeer(aa_address);
+			});
+		}
+
+		if (index.value == 6)
+			return transactWithPeer(aa_address);
+
+		if (index.value == 7)
+			return process.exit();
+
+		const latitude = await prompts({
+			type: 'number',
+			name: 'value',
+			message: 'latitude? (-90 to 90)',
+		});
+
+		const longitude = await prompts({
+			type: 'number',
+			name: 'value',
+			message: 'longitude? (-180 to 180)',
+		});
+
+		const amount = await prompts({
+			type: 'number',
+			name: 'value',
+			message: 'payment amount?',
+		});
+
+		var endPoint;
+		switch (index.value) {
+			case 1:
+				endPoint = 'temperature'
+				break;
+			case 2:
+				endPoint = 'humidity'
+			case 3:
+				endPoint = 'wind'
+		}
+		channels.sendMessageAndPay(aa_address, [endPoint, latitude.value, longitude.value], amount.value, function(error, response) {
+			if (error)
+				console.error("error when sending payment: " + error);
+			else
+				console.error(response);
+			setTimeout(function() {
+				transactWithPeer(aa_address);
+			}, 100);
+		});
+	})
 }
 
 async function deposit(aa_address) {

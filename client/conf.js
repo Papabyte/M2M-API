@@ -11,7 +11,7 @@ exports.control_addresses = [''];
 exports.isHighAvaibilityNode =  false;
 exports.minChannelTimeoutInSecond = 600;
 exports.maxChannelTimeoutInSecond = 1000;
-exports.defaultTimeoutInSecond = 600;
+exports.defaultTimeoutInSecond = 900;
 
 exports.unconfirmedAmountsLimitsByAssetOrChannel = {
 	"base" : {
