@@ -2,19 +2,26 @@
 const channels = require("aa-channels-lib");
 const eventBus = require("ocore/event_bus.js");
 const prompts = require('prompts');
+const fs = require('fs');
 
 eventBus.on("headless_wallet_ready", function() {
 
 	setTimeout(
 		async function() {
+
+			if (fs.existsSync('last_peer.txt'))
+				var last_peer = fs.readFileSync('last_peer.txt', 'utf8');
+
 			const pairing_code = await prompts({
 				type: 'text',
 				name: 'value',
 				message: 'Enter pairing code of your peer',
+				initial: last_peer,
 				validate: value => value.match(/^([\w\/+]+)@([\w.:\/-]+)#([\w\/+-]+)$/) ? true : `Pairing code is invalid`
 			});
-
-			console.error("pairing_code " + pairing_code.value);
+			fs.writeFile("last_peer.txt", pairing_code.value, (err) => {
+				console.log("error when writing last peer");
+			})
 			channels.getChannelsForPeer(pairing_code.value, null, async function(error, aa_addresses) {
 
 				if (error) {
@@ -38,10 +45,9 @@ eventBus.on("headless_wallet_ready", function() {
 				} else {
 					transactWithPeer(aa_addresses[0])
 				}
-
 			});
 		}, 2000)
-})
+});
 
 function transactWithPeer(aa_address) {
 
@@ -54,13 +60,14 @@ function transactWithPeer(aa_address) {
 		console.error("\x1b[36m","Status: "+ objBalancesAndStatus.status);
 		console.error("\x1b[36m","Amount deposited by me and confirmed: "+ objBalancesAndStatus.amount_deposited_by_me);
 		console.error("\x1b[36m","Amount spent by me: "+ objBalancesAndStatus.amount_spent_by_me);
+		console.error("\x1b[36m","Amount spent by peer: "+ objBalancesAndStatus.amount_spent_by_peer);
 		console.error("\x1b[36m","Confirmed amount available for spending: "+ objBalancesAndStatus.free_amount);
-		console.error("\x1b[36m","My deposits not confirmed yet: "+ objBalancesAndStatus.my_deposits);
+		console.error("\x1b[36m","My deposits not confirmed yet: "+ objBalancesAndStatus.my_deposits + "\n");
 	
 		const index = await prompts({
 			type: 'number',
 			name: 'value',
-			message: '\nChoose an operation for this channel, type:\n 1 to request humidity \n 2 to request temperature \n 3 to request wind \n 4 to deposit on channel \n 5 to close channel \n 6 to refresh status \n 7 to quit',
+			message: 'Choose an operation for this channel, type:\n 1 to request humidity \n 2 to request temperature \n 3 to request wind \n 4 to deposit on channel \n 5 to close channel \n 6 to refresh status \n 7 to quit',
 			validate: value => value > 7 || value < 0 ? `Invalid entry` : true
 		});
 
@@ -146,7 +153,7 @@ async function deposit(aa_address) {
 }
 
 eventBus.on("payment_received", function(payment_amount, asset, message, aa_address) {
-	console.error("payment of " + payment_amount + " " + asset + " received on channel " + aa_address + " with  message:" + message);
+	console.error("payment of " + payment_amount + " " + asset + " received on channel " + aa_address + " with  message: " + message);
 });
 
 eventBus.on("channel_closed_with_fraud_proof", function(aa_address, amount) {

@@ -1,5 +1,6 @@
 client/node_modules
 client/package-lock.json
+client/last_peer.txt
 
 server/node_modules
 server/package-lock.json

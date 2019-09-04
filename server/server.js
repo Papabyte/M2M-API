@@ -58,7 +58,7 @@ channels.setCallBackForPaymentReceived(function(amount, asset, arrReceivedFromPe
 	}
 
 	if (price < amount) {
-		refundPeer(aa_address, amount - price, "refund for over payment");
+		refundPeer(aa_address, amount - price, "refund for overpayment");
 		return handle("payment expected for this endpoint " + price + " bytes");
 	}
 
