@@ -29,7 +29,7 @@ const endPoints = {
 				return handle("wrong latitude");
 			if (long < -180 || long > 180)
 				return handle("wrong longitude");
-			return "5 knots";
+			return handle(null, "5 knots");
 		},
 		price: 20000
 	}
