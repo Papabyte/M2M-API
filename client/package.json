@@ -5,7 +5,7 @@
 	"main": "client.js",
 	"license": "MIT",
 	"dependencies": {
-		"aa-channels-lib": "git+https://github.com/Papabyte/aa-channels-lib.git",
+		"aa-channels-lib": "git+https://github.com/byteball/aa-channels-lib.git",
 		"prompts": "^2.2.1"
 	}
 }
