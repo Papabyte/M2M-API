@@ -118,8 +118,10 @@ function operateOnChannel(aa_address) {
 				break;
 			case 2:
 				endPoint = 'humidity'
+				break;
 			case 3:
 				endPoint = 'wind'
+				break;
 		}
 		
 		channels.sendMessageAndPay(aa_address, [endPoint, latitude.value, longitude.value], amount.value, function(error, response) {
